@@ -7,7 +7,7 @@
     <meta name="description" content="桃屁屁AI画布平台 - 免费的AI创作平台，无限画布工作流，让创意无限延伸">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -20,10 +20,15 @@
             --primary-dark: #4f46e5;
             --secondary: #ec4899;
             --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
             --dark: #0f172a;
+            --darker: #020617;
             --light: #f8fafc;
             --text: #334155;
             --text-light: #64748b;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -34,34 +39,77 @@
             overflow-x: hidden;
         }
 
-        /* 背景动画 */
-        .bg-animation {
+        /* 动态背景 */
+        .bg-dynamic {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 50% at 80% 20%, rgba(236, 72, 153, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 40% at 50% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                var(--darker);
+        }
+
+        /* 网格背景 */
+        .bg-grid {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
         }
 
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
-            animation: bgMove 20s ease-in-out infinite;
+        /* 漂浮光点动画 */
+        .floating-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 20s ease-in-out infinite;
         }
 
-        @keyframes bgMove {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(2%, 2%) rotate(1deg); }
-            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(99, 102, 241, 0.3);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(236, 72, 153, 0.25);
+            top: 60%;
+            right: 10%;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: rgba(6, 182, 212, 0.2);
+            bottom: 20%;
+            left: 30%;
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 10px) scale(1.02); }
         }
 
         /* 导航栏 */
@@ -76,53 +124,133 @@
             align-items: center;
             z-index: 1000;
             background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+
+        .logo-text {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .nav-links {
+        .nav-center {
             display: flex;
             gap: 2rem;
             list-style: none;
         }
 
-        .nav-links a {
+        .nav-center a {
             color: var(--text-light);
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            position: relative;
         }
 
-        .nav-links a:hover {
+        .nav-center a:hover {
             color: var(--light);
         }
 
-        .nav-cta {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 0.6rem 1.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: transform 0.3s, box-shadow 0.3s;
+        .nav-center a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
         }
 
-        .nav-cta:hover {
+        .nav-center a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-login {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-login:hover {
+            color: var(--light);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
-        /* 移动端菜单 */
+        .btn-secondary {
+            background: var(--glass);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
         .mobile-menu-btn {
             display: none;
             background: none;
@@ -145,178 +273,213 @@
             display: flex;
             align-items: center;
             padding-top: 80px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
         }
 
         .hero-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.2fr 1fr;
             gap: 4rem;
             align-items: center;
         }
 
         .hero-text h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            line-height: 1.2;
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
             margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease 0.1s backwards;
         }
 
-        .hero-text h1 span {
+        .gradient-text {
             background: linear-gradient(135deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: gradientFlow 5s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        .hero-text p {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            animation: fadeInUp 0.8s ease 0.4s backwards;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .hero-text p {
-            font-size: 1.25rem;
+        .stat-label {
+            font-size: 0.9rem;
             color: var(--text-light);
-            margin-bottom: 2rem;
-            line-height: 1.8;
+            margin-top: 0.3rem;
         }
 
         .hero-buttons {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.3s backwards;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+        .btn-hero {
             padding: 1rem 2.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
             font-size: 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
+            border-radius: 60px;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
+        .btn-hero-secondary {
+            background: transparent;
+            border: 2px solid var(--glass-border);
             color: white;
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+        .btn-hero-secondary:hover {
+            background: var(--glass);
+            border-color: var(--primary);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Hero 视觉区域 */
         .hero-visual {
             position: relative;
+            animation: fadeInUp 0.8s ease 0.5s backwards;
         }
 
-        .canvas-preview {
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+        .canvas-mockup {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
             position: relative;
             overflow: hidden;
         }
 
-        .canvas-preview::before {
+        .canvas-mockup::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent 40%, rgba(99, 102, 241, 0.1) 50%, transparent 60%);
-            animation: shimmer 3s infinite;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
         }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        .canvas-header {
+        .mockup-header {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
+            margin-bottom: 1rem;
         }
 
-        .canvas-dot {
-            width: 12px;
-            height: 12px;
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
         }
 
-        .dot-red { background: #ef4444; }
-        .dot-yellow { background: #eab308; }
-        .dot-green { background: #22c55e; }
-
-        .canvas-content {
-            position: relative;
+        .mockup-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
         }
 
-        .canvas-node {
-            background: rgba(99, 102, 241, 0.2);
-            border: 1px solid rgba(99, 102, 241, 0.3);
+        .mockup-node {
+            background: rgba(30, 41, 59, 0.6);
             border-radius: 12px;
             padding: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
+            border-left: 3px solid;
+            transition: all 0.3s;
         }
 
-        .canvas-node.blue {
-            background: rgba(99, 102, 241, 0.2);
-            border-color: rgba(99, 102, 241, 0.3);
+        .mockup-node:hover {
+            transform: translateX(5px);
+            background: rgba(30, 41, 59, 0.8);
         }
 
-        .canvas-node.pink {
-            background: rgba(236, 72, 153, 0.2);
-            border-color: rgba(236, 72, 153, 0.3);
-        }
+        .mockup-node.blue { border-color: var(--primary); }
+        .mockup-node.pink { border-color: var(--secondary); }
+        .mockup-node.cyan { border-color: var(--accent); }
+        .mockup-node.green { border-color: var(--success); }
 
-        .canvas-node.cyan {
-            background: rgba(6, 182, 212, 0.2);
-            border-color: rgba(6, 182, 212, 0.3);
-        }
-
-        .node-title {
+        .mockup-node-title {
             font-weight: 600;
             margin-bottom: 0.3rem;
-            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .node-desc {
-            font-size: 0.8rem;
+        .mockup-node-desc {
+            font-size: 0.85rem;
             color: var(--text-light);
-        }
-
-        .canvas-connector {
-            position: absolute;
-            left: 50%;
-            bottom: -20px;
-            width: 2px;
-            height: 20px;
-            background: var(--primary);
         }
 
         /* 功能区 */
         .features {
-            padding: 6rem 0;
+            padding: 8rem 0;
         }
 
         .section-header {
@@ -328,21 +491,23 @@
             display: inline-block;
             background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 50px;
             font-size: 0.85rem;
             font-weight: 500;
             margin-bottom: 1rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
         .section-header h2 {
-            font-size: 2.5rem;
+            font-size: 3rem;
+            font-weight: 700;
             margin-bottom: 1rem;
         }
 
         .section-header p {
             color: var(--text-light);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             max-width: 600px;
             margin: 0 auto;
         }
@@ -354,36 +519,68 @@
         }
 
         .feature-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5));
+            border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
-            transition: all 0.3s;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
             border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
         }
 
         .feature-icon {
-            width: 60px;
-            height: 60px;
+            width: 64px;
+            height: 64px;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-bottom: 1.5rem;
+            position: relative;
         }
 
-        .feature-icon.purple { background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.1)); }
-        .feature-icon.pink { background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(236, 72, 153, 0.1)); }
-        .feature-icon.cyan { background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(6, 182, 212, 0.1)); }
+        .feature-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: inherit;
+            filter: blur(20px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .feature-icon.purple { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+        .feature-icon.pink { background: linear-gradient(135deg, var(--secondary), #be185d); }
+        .feature-icon.cyan { background: linear-gradient(135deg, var(--accent), #0891b2); }
+        .feature-icon.green { background: linear-gradient(135deg, var(--success), #059669); }
+        .feature-icon.orange { background: linear-gradient(135deg, var(--warning), #d97706); }
 
         .feature-card h3 {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             margin-bottom: 0.8rem;
         }
 
@@ -393,72 +590,200 @@
             line-height: 1.7;
         }
 
-        /* 案例展示 */
-        .showcase {
+        /* 工作流程展示 */
+        .workflow {
             padding: 6rem 0;
         }
 
-        .showcase-grid {
+        .workflow-content {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .workflow-steps {
+            display: flex;
+            flex-direction: column;
             gap: 1.5rem;
         }
 
-        .showcase-item {
-            background: rgba(30, 41, 59, 0.5);
+        .workflow-step {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            padding: 1.5rem;
+            background: var(--glass);
             border-radius: 16px;
-            overflow: hidden;
+            border: 1px solid var(--glass-border);
             transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .showcase-item:hover {
-            transform: scale(1.02);
+        .workflow-step:hover {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateX(10px);
         }
 
-        .showcase-image {
-            height: 200px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(236, 72, 153, 0.2));
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
         }
 
-        .showcase-info {
-            padding: 1.5rem;
-        }
-
-        .showcase-info h4 {
+        .step-content h4 {
+            font-size: 1.2rem;
             margin-bottom: 0.5rem;
         }
 
-        .showcase-info p {
+        .step-content p {
             color: var(--text-light);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
-        .showcase-tag {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-            padding: 0.3rem 0.8rem;
+        /* 定价区 */
+        .pricing {
+            padding: 8rem 0;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .pricing-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured::before {
+            content: '最受欢迎';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 0.4rem 1rem;
             border-radius: 50px;
-            font-size: 0.75rem;
-            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .pricing-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .pricing-desc {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pricing-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+        }
+
+        .pricing-btn-primary:hover {
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .pricing-btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid var(--glass-border);
+        }
+
+        .pricing-btn-secondary:hover {
+            background: var(--glass);
+            border-color: var(--primary);
         }
 
         /* CTA 区域 */
         .cta {
-            padding: 6rem 0;
+            padding: 8rem 0;
             text-align: center;
         }
 
         .cta-box {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.1));
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.1));
             border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 30px;
-            padding: 4rem 2rem;
+            border-radius: 32px;
+            padding: 5rem 2rem;
             position: relative;
             overflow: hidden;
         }
@@ -470,19 +795,21 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
         }
 
         .cta h2 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 1rem;
             position: relative;
         }
 
         .cta p {
             color: var(--text-light);
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
             position: relative;
         }
 
@@ -492,92 +819,254 @@
             position: relative;
         }
 
-        /* 页脚 */
-        footer {
-            padding: 3rem 0;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        /* FAQ */
+        .faq {
+            padding: 6rem 0;
         }
 
-        footer p {
+        .faq-grid {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            max-height: 200px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+
+        /* 页脚 */
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-brand .logo {
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .footer-links h4 {
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+            color: var(--light);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             color: var(--text-light);
             font-size: 0.9rem;
         }
 
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--glass);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
         /* 响应式 */
-        @media (max-width: 968px) {
+        @media (max-width: 1024px) {
             .hero-content {
                 grid-template-columns: 1fr;
                 text-align: center;
             }
 
             .hero-text h1 {
-                font-size: 2.5rem;
+                font-size: 3rem;
             }
 
-            .hero-buttons {
+            .hero-stats {
                 justify-content: center;
             }
 
             .features-grid,
-            .showcase-grid {
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .workflow-content {
                 grid-template-columns: 1fr;
             }
 
-            .nav-links {
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-center {
                 display: none;
             }
 
             .mobile-menu-btn {
                 display: block;
             }
-        }
 
-        @media (max-width: 480px) {
             .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .pricing-card.featured:hover {
+                transform: translateY(-10px);
+            }
+
+            .section-header h2,
+            .cta h2 {
                 font-size: 2rem;
             }
 
-            .section-header h2 {
-                font-size: 1.8rem;
+            .footer-content {
+                grid-template-columns: 1fr;
             }
 
-            .cta h2 {
-                font-size: 1.8rem;
-            }
-        }
-
-        /* 动画 */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
             }
         }
 
-        .delay-1 { animation-delay: 0.2s; }
-        .delay-2 { animation-delay: 0.4s; }
-        .delay-3 { animation-delay: 0.6s; }
+        @media (max-width: 480px) {
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
+    <div class="bg-dynamic"></div>
+    <div class="bg-grid"></div>
+    <div class="floating-orb orb-1"></div>
+    <div class="floating-orb orb-2"></div>
+    <div class="floating-orb orb-3"></div>
 
     <!-- 导航栏 -->
     <nav>
-        <div class="logo">🍑 桃屁屁 AI</div>
-        <ul class="nav-links">
+        <div class="logo">
+            <span class="logo-icon">🍑</span>
+            <span class="logo-text">桃屁屁 AI</span>
+        </div>
+        <ul class="nav-center">
             <li><a href="#features">功能特点</a></li>
-            <li><a href="#showcase">案例展示</a></li>
-            <li><a href="#start">开始使用</a></li>
+            <li><a href="#workflow">如何使用</a></li>
+            <li><a href="#pricing">定价方案</a></li>
+            <li><a href="#faq">常见问题</a></li>
         </ul>
-        <a href="#" class="nav-cta" id="startCanvasBtn">🚀 开启创作</a>
+        <div class="nav-actions">
+            <a href="https://platform.acedata.cloud/auth/login" class="nav-login" id="loginBtn">登录</a>
+            <a href="https://platform.acedata.cloud/auth/register" class="btn-primary" id="registerBtn">免费注册</a>
+        </div>
         <button class="mobile-menu-btn">☰</button>
     </nav>
 
@@ -586,45 +1075,64 @@
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="fade-in">
+                    <div class="hero-badge">
+                        <span class="badge-dot"></span>
+                        <span>AI 驱动的创意画布平台</span>
+                    </div>
+                    <h1>
                         释放创意，<br>
-                        用 <span>AI 画布</span> 重塑创作
+                        用 <span class="gradient-text">AI 画布</span> 重塑创作
                     </h1>
-                    <p class="fade-in delay-1">
+                    <p>
                         无限画布工作流，让 AI 成为你的创意伙伴。<br>
                         无论你是设计师、创作者还是梦想家，这里都是你的创意起点。
                     </p>
-                    <div class="hero-buttons fade-in delay-2">
-                        <a href="#" class="btn-primary" id="heroCanvasBtn">
-                            🚀 立即体验
-                            <span>→</span>
+                    <div class="hero-buttons">
+                        <a href="https://platform.acedata.cloud/auth/login" class="btn-primary btn-hero" id="heroStartBtn">
+                            🚀 立即开始创作
                         </a>
-                        <a href="#features" class="btn-secondary">
-                            了解更多
+                        <a href="#features" class="btn-secondary btn-hero btn-hero-secondary">
+                            了解更多 →
                         </a>
                     </div>
-                </div>
-                <div class="hero-visual fade-in delay-3">
-                    <div class="canvas-preview">
-                        <div class="canvas-header">
-                            <div class="canvas-dot dot-red"></div>
-                            <div class="canvas-dot dot-yellow"></div>
-                            <div class="canvas-dot dot-green"></div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">10K+</div>
+                            <div class="stat-label">活跃创作者</div>
                         </div>
-                        <div class="canvas-content">
-                            <div class="canvas-node blue">
-                                <div class="node-title">🎨 创意灵感</div>
-                                <div class="node-desc">输入你的想法，让 AI 帮你拓展</div>
-                                <div class="canvas-connector"></div>
+                        <div class="stat-item">
+                            <div class="stat-number">50K+</div>
+                            <div class="stat-label">AI 生成作品</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">服务稳定性</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="canvas-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dot" style="background: #ef4444;"></div>
+                            <div class="mockup-dot" style="background: #eab308;"></div>
+                            <div class="mockup-dot" style="background: #22c55e;"></div>
+                        </div>
+                        <div class="mockup-content">
+                            <div class="mockup-node blue">
+                                <div class="mockup-node-title">🎨 创意灵感</div>
+                                <div class="mockup-node-desc">输入你的想法，AI 帮你拓展思路</div>
                             </div>
-                            <div class="canvas-node pink" style="margin-left: 30px;">
-                                <div class="node-title">⚡ AI 处理</div>
-                                <div class="node-desc">多模型协同，智能生成内容</div>
-                                <div class="canvas-connector"></div>
+                            <div class="mockup-node pink">
+                                <div class="mockup-node-title">⚡ 多模型协同</div>
+                                <div class="mockup-node-desc">GPT-4、Claude、Gemini 随你调用</div>
                             </div>
-                            <div class="canvas-node cyan" style="margin-left: 60px;">
-                                <div class="node-title">✨ 完美呈现</div>
-                                <div class="node-desc">一键导出，适配多场景</div>
+                            <div class="mockup-node cyan">
+                                <div class="mockup-node-title">🎯 智能工作流</div>
+                                <div class="mockup-node-desc">拖拽组合，一键生成专业内容</div>
+                            </div>
+                            <div class="mockup-node green">
+                                <div class="mockup-node-title">✨ 完美导出</div>
+                                <div class="mockup-node-desc">适配多场景，一键分享传播</div>
                             </div>
                         </div>
                     </div>
@@ -638,7 +1146,7 @@
         <div class="container">
             <div class="section-header">
                 <span class="section-tag">✨ 核心能力</span>
-                <h2>为什么选择我们的 AI 画布？</h2>
+                <h2>为什么选择桃屁屁 AI？</h2>
                 <p>强大的功能，简单的操作，让创作变得前所未有的高效</p>
             </div>
             <div class="features-grid">
@@ -658,17 +1166,17 @@
                     <p>可视化编排 AI 工作流，一键复用创意模板，让重复工作自动化，专注真正重要的创作。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon purple">📦</div>
+                    <div class="feature-icon green">📦</div>
                     <h3>模板市场</h3>
                     <p>海量社区模板，开箱即用。从海报到视频，从文案到代码，快速启动你的创意项目。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon pink">👥</div>
+                    <div class="feature-icon orange">👥</div>
                     <h3>协作共享</h3>
                     <p>实时协作，团队共创。一键分享作品，让创意碰撞出更多火花。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon cyan">🔒</div>
+                    <div class="feature-icon purple">🔒</div>
                     <h3>安全私密</h3>
                     <p>端到端加密，你的创意数据只属于你。放心创作，无后顾之忧。</p>
                 </div>
@@ -676,37 +1184,157 @@
         </div>
     </section>
 
-    <!-- 案例展示 -->
-    <section class="showcase" id="showcase">
+    <!-- 如何使用 -->
+    <section class="workflow" id="workflow">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">🎯 创意无限</span>
-                <h2>他们都在用 AI 画布创作</h2>
-                <p>看看社区创作者们的精彩作品</p>
+                <span class="section-tag">🚀 快速上手</span>
+                <h2>4 步开启 AI 创作</h2>
+                <p>简单几步，立即体验 AI 画布的强大功能</p>
             </div>
-            <div class="showcase-grid">
-                <div class="showcase-item">
-                    <div class="showcase-image">🎬</div>
-                    <div class="showcase-info">
-                        <h4>AI 视频脚本生成</h4>
-                        <p>一键生成短视频脚本，自动配文配乐</p>
-                        <span class="showcase-tag">内容创作</span>
+            <div class="workflow-content">
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>注册账号</h4>
+                            <p>使用邮箱或微信快速注册，开始你的 AI 创作之旅</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>选择模板</h4>
+                            <p>从海量模板库中选择适合你的创作场景</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>AI 生成</h4>
+                            <p>输入简单描述，AI 帮你生成专业级内容</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>导出分享</h4>
+                            <p>一键导出为多种格式，分享到任何平台</p>
+                        </div>
                     </div>
                 </div>
-                <div class="showcase-item">
-                    <div class="showcase-image">📝</div>
-                    <div class="showcase-info">
-                        <h4>营销文案工作流</h4>
-                        <p>从灵感到大纲到成稿，全自动搞定</p>
-                        <span class="showcase-tag">营销运营</span>
+                <div style="display: flex; justify-content: center; align-items: center;">
+                    <div class="canvas-mockup" style="max-width: 400px;">
+                        <div class="mockup-header">
+                            <div class="mockup-dot" style="background: #ef4444;"></div>
+                            <div class="mockup-dot" style="background: #eab308;"></div>
+                            <div class="mockup-dot" style="background: #22c55e;"></div>
+                        </div>
+                        <div style="text-align: center; padding: 2rem;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">🎬</div>
+                            <h3 style="margin-bottom: 0.5rem;">AI 视频脚本</h3>
+                            <p style="color: var(--text-light); margin-bottom: 1rem;">30秒生成完整视频脚本</p>
+                            <a href="https://platform.acedata.cloud/auth/login" class="btn-primary">立即体验 →</a>
+                        </div>
                     </div>
                 </div>
-                <div class="showcase-item">
-                    <div class="showcase-image">🎨</div>
-                    <div class="showcase-info">
-                        <h4>品牌视觉设计</h4>
-                        <p>AI 辅助设计 LOGO、海报、品牌全案</p>
-                        <span class="showcase-tag">设计创意</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 定价 -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">💰 灵活定价</span>
+                <h2>选择适合你的方案</h2>
+                <p>从免费开始，随需求升级</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-name">免费版</div>
+                    <div class="pricing-price">¥0<span>/月</span></div>
+                    <p class="pricing-desc">适合个人尝鲜体验</p>
+                    <ul class="pricing-features">
+                        <li>每日 50 次 AI 生成</li>
+                        <li>基础画布功能</li>
+                        <li>5 个模板使用</li>
+                        <li>社区模板浏览</li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-secondary" onclick="location.href='https://platform.acedata.cloud/auth/register'">免费注册</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="pricing-name">专业版</div>
+                    <div class="pricing-price">¥99<span>/月</span></div>
+                    <p class="pricing-desc">适合创作者和自媒体</p>
+                    <ul class="pricing-features">
+                        <li>每日 500 次 AI 生成</li>
+                        <li>无限画布空间</li>
+                        <li>全部模板可用</li>
+                        <li>自定义模板</li>
+                        <li>优先客服支持</li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-primary" onclick="location.href='https://platform.acedata.cloud/auth/login'">立即升级</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-name">企业版</div>
+                    <div class="pricing-price">¥399<span>/月</span></div>
+                    <p class="pricing-desc">适合团队和企业</p>
+                    <ul class="pricing-features">
+                        <li>无限 AI 生成次数</li>
+                        <li>团队协作空间</li>
+                        <li>私有模板库</li>
+                        <li>API 接口调用</li>
+                        <li>专属客户经理</li>
+                    </ul>
+                    <button class="pricing-btn pricing-btn-secondary" onclick="location.href='https://platform.acedata.cloud/auth/login'">咨询详情</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">❓ 常见问题</span>
+                <h2>有问题？我们来解答</h2>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>桃屁屁 AI 是什么？</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        桃屁屁 AI 是一个基于 AI 画布的创意平台，通过可视化的工作流编排，让你轻松使用 GPT-4、Claude 等顶级 AI 模型来创作内容。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>需要编程基础吗？</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        完全不需要！我们的平台采用拖拽式操作，任何人都可以轻松上手。只需要输入你想创作的内容描述，AI 会自动帮你完成复杂的创作过程。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>免费版有什么限制？</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        免费版每天可以生成 50 次内容，足够日常学习和轻度使用。如果需要更高级的功能，可以随时升级到专业版或企业版。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>我的数据安全吗？</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        我们非常重视数据安全。所有数据传输都采用加密连接，用户内容仅存储在安全的云端服务器，你可以随时导出或删除自己的数据。
                     </div>
                 </div>
             </div>
@@ -714,14 +1342,13 @@
     </section>
 
     <!-- CTA -->
-    <section class="cta" id="start">
+    <section class="cta">
         <div class="container">
             <div class="cta-box">
                 <h2>准备好开启你的 AI 创作之旅了吗？</h2>
                 <p>免费注册，立即体验无限创意的魅力</p>
-                <a href="#" class="btn-primary" id="ctaBtn">
-                    🚀 立即开始
-                    <span>→</span>
+                <a href="https://platform.acedata.cloud/auth/register" class="btn-primary" id="ctaBtn">
+                    🚀 立即开始免费使用
                 </a>
             </div>
         </div>
@@ -730,27 +1357,56 @@
     <!-- 页脚 -->
     <footer>
         <div class="container">
-            <p>© 2026 桃屁屁 AI 画布平台 · 让创意无限延伸</p>
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <span class="logo-icon">🍑</span>
+                        <span class="logo-text">桃屁屁 AI</span>
+                    </div>
+                    <p>让 AI 赋能创意，让每个人都能成为创作者。桃屁屁 AI 画布平台，让创意无限延伸。</p>
+                </div>
+                <div class="footer-links">
+                    <h4>产品</h4>
+                    <ul>
+                        <li><a href="#features">功能特点</a></li>
+                        <li><a href="#pricing">定价方案</a></li>
+                        <li><a href="#workflow">使用教程</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>支持</h4>
+                    <ul>
+                        <li><a href="#faq">常见问题</a></li>
+                        <li><a href="https://platform.acedata.cloud/help">帮助中心</a></li>
+                        <li><a href="https://platform.acedata.cloud/contact">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>法律</h4>
+                    <ul>
+                        <li><a href="https://platform.acedata.cloud/privacy">隐私政策</a></li>
+                        <li><a href="https://platform.acedata.cloud/terms">服务条款</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 桃屁屁 AI 画布平台 · 让创意无限延伸</p>
+                <div class="social-links">
+                    <a href="#" title="微信公众号">💬</a>
+                    <a href="#" title="微博">📱</a>
+                    <a href="#" title="小红书">📕</a>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script>
-        // 跳转到画布功能页
-        document.getElementById('startCanvasBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            // 跳转到画布功能页（待配置）
-            window.location.href = 'https://nexior-taopipi.vercel.app/canvas';
-        });
-
-        document.getElementById('heroCanvasBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'https://nexior-taopipi.vercel.app/canvas';
-        });
-
-        document.getElementById('ctaBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            // 跳转到登录/注册页
-            window.location.href = 'https://nexior-taopipi.vercel.app/auth';
+        // FAQ 折叠功能
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('active');
+            });
         });
 
         // 平滑滚动
@@ -760,7 +1416,8 @@
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({
-                        behavior: 'smooth'
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
             });
@@ -781,11 +1438,23 @@
             });
         }, observerOptions);
 
-        document.querySelectorAll('.feature-card, .showcase-item').forEach(el => {
+        document.querySelectorAll('.feature-card, .pricing-card, .workflow-step').forEach(el => {
             el.style.opacity = '0';
             el.style.transform = 'translateY(30px)';
             el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(el);
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.style.background = 'rgba(15, 23, 42, 0.95)';
+                nav.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.3)';
+            } else {
+                nav.style.background = 'rgba(15, 23, 42, 0.8)';
+                nav.style.boxShadow = 'none';
+            }
         });
     </script>
 </body>
