@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桃屁屁 AI 画布</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            height: 60px;
+            background: rgba(30, 30, 50, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .logo img {
+            height: 36px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav button {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* Main Layout */
+        .main {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: rgba(20, 20, 35, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .node-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+
+        .node-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .node-item .icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .node-item .name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Canvas */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #0a0a15;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            cursor: grab;
+        }
+
+        .canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+
+        /* Node */
+        .node {
+            position: absolute;
+            background: rgba(30, 30, 50, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            min-width: 200px;
+            max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            cursor: move;
+            user-select: none;
+        }
+
+        .node.selected {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
+        }
+
+        .node-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .node-icon {
+            font-size: 18px;
+        }
+
+        .node-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .node-body {
+            padding: 12px 16px;
+        }
+
+        .node textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            padding: 10px;
+            font-size: 13px;
+            resize: none;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .node textarea:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+
+        .node select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .node select:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+
+        .node-footer {
+            padding: 10px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .node button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: #fff;
+        }
+
+        .btn-run:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .btn-delete {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Result Panel */
+        .result-panel {
+            width: 320px;
+            background: rgba(20, 20, 35, 0.95);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .result-model {
+            font-size: 11px;
+            color: #a855f7;
+            margin-bottom: 6px;
+        }
+
+        .result-content {
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .result-loading {
+            color: #a855f7;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* API Config */
+        .api-config {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .config-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .config-row {
+            margin-bottom: 10px;
+        }
+
+        .config-row label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .config-row input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .config-row input:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .save-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Connection Points */
+        .connection-point {
+            width: 14px;
+            height: 14px;
+            background: #6366f1;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            cursor: crosshair;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .connection-point:hover {
+            background: #a855f7;
+            transform: scale(1.2);
+        }
+
+        .connection-point.active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .point-input {
+            left: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .point-output {
+            right: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* SVG Lines */
+        .lines-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            stroke: #6366f1;
+            stroke-width: 3;
+            fill: none;
+            filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.5));
+        }
+
+        .connection-line:hover {
+            stroke: #a855f7;
+            cursor: pointer;
+        }
+
+        .temp-line {
+            stroke: #a855f7;
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+            fill: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(168, 85, 247, 0.9);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Run All Button */
+        .run-all-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 340px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            z-index: 100;
+        }
+
+        .run-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="logo.png" alt="桃屁屁 AI" onerror="this.parentElement.innerHTML='<span style=\\'font-size:24px;\\'>🍑</span><span>桃屁屁 AI</span>'">
+            <span>AI 画布</span>
+        </div>
+        <nav class="nav">
+            <button onclick="clearCanvas()">🗑️ 清空画布</button>
+            <button onclick="toggleConfig()">⚙️ API 配置</button>
+        </nav>
+    </header>
+
+    <div class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h3>📦 节点库</h3>
+            
+            <div class="node-item" draggable="true" ondragstart="dragNode(event, 'input')">
+                <div class="icon">🚀</div>
+                <div class="name">开始节点</div>
+            </div>
+            
+            <div class="node-item" draggable="true" ondragstart="dragNode(event, 'ai')">
+                <div class="icon">🤖</div>
+                <div class="name">DeepSeek AI</div>
+            </div>
+            
+            <div class="node-item" draggable="true" ondragstart="dragNode(event, 'output')">
+                <div class="icon">📝</div>
+                <div class="name">输出节点</div>
+            </div>
+
+            <h3 style="margin-top: 24px;">💡 使用提示</h3>
+            <div style="font-size: 12px; color: #666; line-height: 1.6;">
+                1. 从左侧拖拽节点到画布<br>
+                2. 点击节点右侧圆点拖动连线<br>
+                3. 连接到下一个节点的左侧圆点<br>
+                4. 配置 API 后点击运行
+            </div>
+        </aside>
+
+        <!-- Canvas -->
+        <div class="canvas-container" id="canvasContainer">
+            <div id="canvas">
+                <div class="canvas-bg"></div>
+                <svg class="lines-svg" id="linesSvg">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1" />
+                        </marker>
+                    </defs>
+                </svg>
+                <div class="empty-state" id="emptyState">
+                    <div class="icon">🎨</div>
+                    <p>从左侧拖拽节点开始创作</p>
+                </div>
+            </div>
+            <button class="run-all-btn" onclick="runAll()" id="runAllBtn" style="display:none;">▶️ 运行全部</button>
+        </div>
+
+        <!-- Result Panel -->
+        <aside class="result-panel">
+            <div class="panel-header">📊 运行结果</div>
+            <div class="panel-body">
+                <!-- API Config -->
+                <div class="api-config" id="apiConfig">
+                    <div class="config-title">DeepSeek API 配置</div>
+                    <div class="config-row">
+                        <label>API 地址</label>
+                        <input type="text" id="apiUrl" value="https://api.acedata.cloud/deepseek/chat/completions" placeholder="https://api.acedata.cloud/deepseek/chat/completions">
+                    </div>
+                    <div class="config-row">
+                        <label>API 令牌 (Bearer Token)</label>
+                        <input type="password" id="apiToken" placeholder="platform-v1-xxx 或选择 Token 类型">
+                    </div>
+                    <div class="config-row">
+                        <label>Token 类型</label>
+                        <select id="tokenType" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;padding:8px;font-size:13px;">
+                            <option value="platform-v1-">平台令牌 (platform-v1-xxx)</option>
+                            <option value="">直接填入完整 Token</option>
+                        </select>
+                    </div>
+                    <button class="save-btn" onclick="saveConfig()">💾 保存配置</button>
+                </div>
+
+                <div id="results"></div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // State
+        let nodes = [];
+        let connections = [];
+        let nodeIdCounter = 0;
+        let connectionIdCounter = 0;
+        let selectedNode = null;
+        let isDraggingCanvas = false;
+        let canvasOffset = { x: 0, y: 0 };
+
+        // Connection dragging state
+        let isConnecting = false;
+        let connectionStart = null;
+        let tempLine = null;
+
+        // Default config
+        let config = {
+            apiUrl: 'https://api.acedata.cloud/deepseek/chat/completions',
+            apiToken: '',
+            tokenType: 'platform-v1-'
+        };
+
+        // Load config from localStorage
+        function loadConfig() {
+            const saved = localStorage.getItem('taopipi_canvas_config');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('apiUrl').value = config.apiUrl;
+                document.getElementById('apiToken').value = config.apiToken;
+                document.getElementById('tokenType').value = config.tokenType;
+            }
+        }
+
+        // Save config
+        function saveConfig() {
+            config.apiUrl = document.getElementById('apiUrl').value;
+            config.apiToken = document.getElementById('apiToken').value;
+            config.tokenType = document.getElementById('tokenType').value;
+            localStorage.setItem('taopipi_canvas_config', JSON.stringify(config));
+            showToast('✅ 配置已保存！');
+        }
+
+        // Toggle config visibility
+        function toggleConfig() {
+            const panel = document.getElementById('apiConfig');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Drag & Drop
+        function dragNode(e, type) {
+            e.dataTransfer.setData('nodeType', type);
+        }
+
+        document.getElementById('canvasContainer').addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.getElementById('canvasContainer').addEventListener('drop', (e) => {
+            e.preventDefault();
+            const type = e.dataTransfer.getData('nodeType');
+            if (type) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left - 100;
+                const y = e.clientY - rect.top - 40;
+                createNode(type, x, y);
+            }
+        });
+
+        // Create Node
+        function createNode(type, x, y) {
+            const id = ++nodeIdCounter;
+            const nodeData = {
+                id,
+                type,
+                x,
+                y,
+                content: '',
+                model: 'deepseek-v3',
+                result: ''
+            };
+            nodes.push(nodeData);
+            renderNode(nodeData);
+            updateEmptyState();
+            updateRunAllButton();
+        }
+
+        function renderNode(nodeData) {
+            const canvas = document.getElementById('canvas');
+            
+            let html = '';
+            if (nodeData.type === 'input') {
+                html = `
+                    <div class="node" id="node-${nodeData.id}" style="left:${nodeData.x}px;top:${nodeData.y}px;z-index:5;" 
+                         onmousedown="startDragNode(event, ${nodeData.id})">
+                        <div class="node-header">
+                            <span class="node-icon">🚀</span>
+                            <span class="node-title">开始节点</span>
+                        </div>
+                        <div class="node-body">
+                            <textarea placeholder="输入你的问题..." 
+                                      onchange="updateNode(${nodeData.id}, 'content', this.value)">${nodeData.content}</textarea>
+                        </div>
+                        <div class="connection-point point-output" 
+                             onmousedown="startConnection(event, ${nodeData.id}, 'output')"></div>
+                    </div>
+                `;
+            } else if (nodeData.type === 'ai') {
+                html = `
+                    <div class="node" id="node-${nodeData.id}" style="left:${nodeData.x}px;top:${nodeData.y}px;z-index:5;"
+                         onmousedown="startDragNode(event, ${nodeData.id})">
+                        <div class="node-header">
+                            <span class="node-icon">🤖</span>
+                            <span class="node-title">DeepSeek AI</span>
+                        </div>
+                        <div class="node-body">
+                            <select onchange="updateNode(${nodeData.id}, 'model', this.value)">
+                                <option value="deepseek-v3" ${nodeData.model === 'deepseek-v3' ? 'selected' : ''}>DeepSeek V3 (推荐)</option>
+                                <option value="deepseek-v3.2-exp" ${nodeData.model === 'deepseek-v3.2-exp' ? 'selected' : ''}>DeepSeek V3.2 (实验版)</option>
+                            </select>
+                        </div>
+                        <div class="node-footer">
+                            <button class="btn-delete" onclick="deleteNode(${nodeData.id})">🗑️</button>
+                            <button class="btn-run" onclick="runNode(${nodeData.id})">▶️ 运行</button>
+                        </div>
+                        <div class="connection-point point-input" 
+                             onmouseup="endConnection(event, ${nodeData.id}, 'input')"></div>
+                        <div class="connection-point point-output" 
+                             onmousedown="startConnection(event, ${nodeData.id}, 'output')"></div>
+                    </div>
+                `;
+            } else if (nodeData.type === 'output') {
+                html = `
+                    <div class="node" id="node-${nodeData.id}" style="left:${nodeData.x}px;top:${nodeData.y}px;z-index:5;"
+                         onmousedown="startDragNode(event, ${nodeData.id})">
+                        <div class="node-header">
+                            <span class="node-icon">📝</span>
+                            <span class="node-title">输出节点</span>
+                        </div>
+                        <div class="node-body">
+                            <textarea placeholder="AI 回复将显示在这里..." readonly>${nodeData.result}</textarea>
+                        </div>
+                        <div class="connection-point point-input" 
+                             onmouseup="endConnection(event, ${nodeData.id}, 'input')"></div>
+                    </div>
+                `;
+            }
+
+            canvas.insertAdjacentHTML('beforeend', html);
+        }
+
+        function updateNode(id, field, value) {
+            const node = nodes.find(n => n.id === id);
+            if (node) {
+                node[field] = value;
+            }
+        }
+
+        function deleteNode(id) {
+            // Remove connections related to this node
+            connections = connections.filter(c => c.from !== id && c.to !== id);
+            nodes = nodes.filter(n => n.id !== id);
+            document.getElementById(`node-${id}`)?.remove();
+            renderConnections();
+            updateEmptyState();
+            updateRunAllButton();
+        }
+
+        function clearCanvas() {
+            nodes = [];
+            connections = [];
+            document.querySelectorAll('.node').forEach(n => n.remove());
+            document.getElementById('results').innerHTML = '';
+            updateEmptyState();
+            updateRunAllButton();
+        }
+
+        function updateEmptyState() {
+            const state = document.getElementById('emptyState');
+            state.style.display = nodes.length === 0 ? 'flex' : 'none';
+        }
+
+        function updateRunAllButton() {
+            const btn = document.getElementById('runAllBtn');
+            const hasAI = nodes.some(n => n.type === 'ai');
+            btn.style.display = hasAI ? 'block' : 'none';
+        }
+
+        // Connection Logic
+        function startConnection(e, nodeId, type) {
+            e.stopPropagation();
+            isConnecting = true;
+            connectionStart = { nodeId, type };
+            
+            // Create temp line
+            const svg = document.getElementById('linesSvg');
+            const node = document.getElementById(`node-${nodeId}`);
+            const rect = node.getBoundingClientRect();
+            const containerRect = document.getElementById('canvasContainer').getBoundingClientRect();
+            
+            const startX = type === 'output' ? rect.right - containerRect.left : rect.left - containerRect.left;
+            const startY = rect.top + rect.height / 2 - containerRect.top;
+            
+            tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            tempLine.setAttribute('class', 'temp-line');
+            tempLine.setAttribute('d', `M ${startX} ${startY} L ${startX} ${startY}`);
+            svg.appendChild(tempLine);
+            
+            document.addEventListener('mousemove', drawTempLine);
+            document.addEventListener('mouseup', cancelConnection);
+        }
+
+        function drawTempLine(e) {
+            if (!isConnecting || !tempLine) return;
+            
+            const containerRect = document.getElementById('canvasContainer').getBoundingClientRect();
+            const startNode = document.getElementById(`node-${connectionStart.nodeId}`);
+            const startRect = startNode.getBoundingClientRect();
+            
+            const startX = connectionStart.type === 'output' 
+                ? startRect.right - containerRect.left 
+                : startRect.left - containerRect.left;
+            const startY = startRect.top + startRect.height / 2 - containerRect.top;
+            
+            const endX = e.clientX - containerRect.left;
+            const endY = e.clientY - containerRect.top;
+            
+            // Bezier curve
+            const midX = (startX + endX) / 2;
+            const d = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+            tempLine.setAttribute('d', d);
+        }
+
+        function endConnection(e, nodeId, type) {
+            e.stopPropagation();
+            if (!isConnecting) return;
+            
+            // Check valid connection
+            if (connectionStart.nodeId === nodeId) {
+                cancelConnection();
+                return;
+            }
+            
+            if (connectionStart.type === 'output' && type === 'input') {
+                // Create connection
+                const fromNode = nodes.find(n => n.id === connectionStart.nodeId);
+                const toNode = nodes.find(n => n.id === nodeId);
+                
+                // Check if connection already exists
+                const exists = connections.some(c => c.from === connectionStart.nodeId && c.to === nodeId);
+                if (!exists) {
+                    connections.push({
+                        id: ++connectionIdCounter,
+                        from: connectionStart.nodeId,
+                        to: nodeId
+                    });
+                    renderConnections();
+                    showToast('✅ 连线成功！');
+                }
+            }
+            
+            cancelConnection();
+        }
+
+        function cancelConnection() {
+            isConnecting = false;
+            connectionStart = null;
+            if (tempLine) {
+                tempLine.remove();
+                tempLine = null;
+            }
+            document.removeEventListener('mousemove', drawTempLine);
+            document.removeEventListener('mouseup', cancelConnection);
+        }
+
+        function renderConnections() {
+            const svg = document.getElementById('linesSvg');
+            // Remove existing lines (keep defs)
+            const lines = svg.querySelectorAll('.connection-line');
+            lines.forEach(l => l.remove());
+            
+            const containerRect = document.getElementById('canvasContainer').getBoundingClientRect();
+            
+            connections.forEach(conn => {
+                const fromNode = document.getElementById(`node-${conn.from}`);
+                const toNode = document.getElementById(`node-${conn.to}`);
+                
+                if (!fromNode || !toNode) return;
+                
+                const fromRect = fromNode.getBoundingClientRect();
+                const toRect = toNode.getBoundingClientRect();
+                
+                const startX = fromRect.right - containerRect.left;
+                const startY = fromRect.top + fromRect.height / 2 - containerRect.top;
+                const endX = toRect.left - containerRect.left;
+                const endY = toRect.top + toRect.height / 2 - containerRect.top;
+                
+                const midX = (startX + endX) / 2;
+                const d = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                line.setAttribute('class', 'connection-line');
+                line.setAttribute('d', d);
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+                line.setAttribute('data-connection', conn.id);
+                line.onclick = () => deleteConnection(conn.id);
+                svg.appendChild(line);
+            });
+        }
+
+        function deleteConnection(id) {
+            connections = connections.filter(c => c.id !== id);
+            renderConnections();
+            showToast('🗑️ 连线已删除');
+        }
+
+        // Node Dragging
+        let dragNodeId = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        function startDragNode(e, id) {
+            if (e.target.classList.contains('connection-point') || 
+                e.target.tagName === 'BUTTON' || 
+                e.target.tagName === 'SELECT' || 
+                e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            dragNodeId = id;
+            const node = document.getElementById(`node-${id}`);
+            const rect = node.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+            
+            document.addEventListener('mousemove', dragNodeMove);
+            document.addEventListener('mouseup', stopDragNode);
+        }
+
+        function dragNodeMove(e) {
+            if (dragNodeId === null) return;
+            const container = document.getElementById('canvasContainer');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left - dragOffset.x;
+            const y = e.clientY - rect.top - dragOffset.y;
+            
+            const node = document.getElementById(`node-${dragNodeId}`);
+            node.style.left = `${x}px`;
+            node.style.top = `${y}px`;
+            
+            const nodeData = nodes.find(n => n.id === dragNodeId);
+            if (nodeData) {
+                nodeData.x = x;
+                nodeData.y = y;
+            }
+            
+            // Update connections while dragging
+            renderConnections();
+        }
+
+        function stopDragNode() {
+            dragNodeId = null;
+            document.removeEventListener('mousemove', dragNodeMove);
+            document.removeEventListener('mouseup', stopDragNode);
+        }
+
+        // Run AI
+        async function runNode(id) {
+            const node = nodes.find(n => n.id === id);
+            if (!node || node.type !== 'ai') return;
+
+            if (!config.apiToken) {
+                showToast('⚠️ 请先配置 API 令牌！');
+                toggleConfig();
+                return;
+            }
+
+            // Find connected input node
+            const inputConnection = connections.find(c => c.to === id);
+            let question = 'Hello, who are you?';
+            
+            if (inputConnection) {
+                const inputNode = nodes.find(n => n.id === inputConnection.from);
+                if (inputNode && inputNode.content) {
+                    question = inputNode.content;
+                }
+            }
+
+            // Add result placeholder
+            const results = document.getElementById('results');
+            const resultId = `result-${Date.now()}`;
+            results.insertAdjacentHTML('afterbegin', `
+                <div class="result-item" id="${resultId}">
+                    <div class="result-model">🤖 ${node.model} - 运行中...</div>
+                    <div class="result-content result-loading">正在思考中...</div>
+                </div>
+            `);
+
+            try {
+                const token = config.tokenType ? config.tokenType + config.apiToken : config.apiToken;
+                
+                const response = await fetch(config.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: node.model,
+                        messages: [
+                            { role: 'user', content: question }
+                        ],
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const answer = data.choices?.[0]?.message?.content || '无响应';
+                
+                // Save result to node
+                node.result = answer;
+
+                document.getElementById(resultId).innerHTML = `
+                    <div class="result-model">🤖 ${node.model}</div>
+                    <div class="result-content">${answer}</div>
+                `;
+
+                // Update output node if connected
+                const outputConnection = connections.find(c => c.from === id);
+                if (outputConnection) {
+                    const outputNode = nodes.find(n => n.id === outputConnection.to);
+                    if (outputNode && outputNode.type === 'output') {
+                        outputNode.result = answer;
+                        const outputTextarea = document.querySelector(`#node-${outputNode.id} textarea`);
+                        if (outputTextarea) {
+                            outputTextarea.value = answer;
+                        }
+                    }
+                }
+
+            } catch (error) {
+                document.getElementById(resultId).innerHTML = `
+                    <div class="result-model">❌ 错误</div>
+                    <div class="result-content" style="color: #ef4444;">${error.message}</div>
+                `;
+            }
+        }
+
+        // Run All
+        async function runAll() {
+            const aiNodes = nodes.filter(n => n.type === 'ai');
+            if (aiNodes.length === 0) {
+                showToast('⚠️ 没有 AI 节点可运行');
+                return;
+            }
+
+            showToast(`▶️ 开始运行 ${aiNodes.length} 个节点...`);
+            
+            for (const node of aiNodes) {
+                await runNode(node.id);
+            }
+            
+            showToast('✅ 全部运行完成！');
+        }
+
+        // Toast
+        function showToast(message) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Init
+        loadConfig();
+    </script>
+</body>
+</html>
